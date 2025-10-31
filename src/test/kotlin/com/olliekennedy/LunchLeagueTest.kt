@@ -31,4 +31,14 @@ class LunchLeagueTest {
         assertThat(body, contains("<h1>Lunch League</h1>".toRegex()))
         assertThat(body, contains("<h2>Place your vote:</h2>".toRegex()))
     }
+
+    @Test
+    fun `home page contains a vote button`() {
+        val response = app(Request(Method.GET, "/"))
+        assertThat(Status.OK, equalTo(response.status))
+        assertThat(response.contentType(), equalTo(TEXT_HTML))
+        val body = response.bodyString()
+        assertThat(body, contains("<button".toRegex()))
+        assertThat(body, contains("<a href=\"/vote\"".toRegex()))
+    }
 }
