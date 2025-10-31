@@ -13,8 +13,21 @@ import org.http4k.server.Jetty
 import org.http4k.server.asServer
 
 val app = routes(
-    "/" bind Method.GET to { Response(Status.OK).html("Lunch League") },
-    "/vote" bind Method.GET to { Response(Status.OK).html("Place your vote:") },
+    "/" bind Method.GET to {
+        Response(Status.OK).html(
+            """
+                <h1>Lunch League</h1>
+            """.trimIndent())
+    },
+
+    "/vote" bind Method.GET to {
+        Response(Status.OK).html(
+            """
+                <h1>Lunch League</h1>
+                <h2>Place your vote:</h2>
+            """.trimIndent()
+        )
+    },
 )
 
 fun buildApp(debug: Boolean = false): HttpHandler {

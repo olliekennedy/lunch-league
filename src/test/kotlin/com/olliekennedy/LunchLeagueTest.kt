@@ -1,6 +1,7 @@
 package com.olliekennedy
 
 import com.natpryce.hamkrest.assertion.assertThat
+import com.natpryce.hamkrest.contains
 import com.natpryce.hamkrest.equalTo
 import org.http4k.core.ContentType.Companion.TEXT_HTML
 import org.http4k.core.Method
@@ -17,7 +18,7 @@ class LunchLeagueTest {
         assertThat(Status.OK, equalTo(response.status))
         assertThat(response.contentType(), equalTo(TEXT_HTML))
         val title = response.bodyString()
-        assertThat(title, equalTo("Lunch League"))
+        assertThat(title, contains("<h1>Lunch League</h1>".toRegex()))
     }
 
     @Test
@@ -25,7 +26,8 @@ class LunchLeagueTest {
         val response = app(Request(Method.GET, "/vote"))
         assertThat(Status.OK, equalTo(response.status))
         assertThat(response.contentType(), equalTo(TEXT_HTML))
-        val title = response.bodyString()
-        assertThat(title, equalTo("Place your vote:"))
+        val body = response.bodyString()
+        assertThat(body, contains("<h1>Lunch League</h1>".toRegex()))
+        assertThat(body, contains("<h2>Place your vote:</h2>".toRegex()))
     }
 }
