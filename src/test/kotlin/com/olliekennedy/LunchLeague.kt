@@ -1,79 +1,28 @@
-import com.olliekennedy.app
-import com.olliekennedy.jobs
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
+package com.olliekennedy
+
+import com.natpryce.hamkrest.assertion.assertThat
+import com.natpryce.hamkrest.equalTo
 import org.http4k.core.Method
 import org.http4k.core.Request
 import org.http4k.core.Status
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class LunchLeague {
 
     @Test
-    fun `start endpoint returns jobId and job is registered`() {
-        val response = app(Request(Method.GET, "/start"))
+    fun `home shows the leaderboard`() {
+        val response = app(Request(Method.GET, "/"))
         assertEquals(Status.OK, response.status)
-        val jobId = response.bodyString()
-        assertTrue(jobId.isNotBlank())
-        assertTrue(jobs.containsKey(jobId))
+        val title = response.bodyString()
+        assertThat(title, equalTo("Lunch League"))
     }
 
     @Test
-    fun `status endpoint returns pending then done`() = runBlocking {
-        val response = app(Request(Method.GET, "/start"))
-        val jobId = response.bodyString()
-        // Immediately after start, should be pending
-        val statusPending = app(Request(Method.GET, "/status/$jobId"))
-        assertEquals(Status.OK, statusPending.status)
-        assertEquals("pending", statusPending.bodyString())
-        // Wait for job to complete
-        delay(4000)
-        val statusDone = app(Request(Method.GET, "/status/$jobId"))
-        assertEquals(Status.OK, statusDone.status)
-        assertEquals("done", statusDone.bodyString())
-    }
-
-    @Test
-    fun `status endpoint returns 404 for unknown job`() {
-        val response = app(Request(Method.GET, "/status/unknown"))
-        assertEquals(Status.NOT_FOUND, response.status)
-    }
-
-    @Test
-    fun `status endpoint returns 404 for missing jobId`() {
-        val response = app(Request(Method.GET, "/status/"))
-        assertEquals(Status.NOT_FOUND, response.status)
-    }
-
-    @Test
-    fun `result endpoint returns 202 if job not done`() {
-        val response = app(Request(Method.GET, "/start"))
-        val jobId = response.bodyString()
-        val result = app(Request(Method.GET, "/result/$jobId"))
-        assertEquals(Status.ACCEPTED, result.status)
-    }
-
-    @Test
-    fun `result endpoint shows file content when job done`() = runBlocking {
-        val response = app(Request(Method.GET, "/start"))
-        val jobId = response.bodyString()
-        delay(4000)
-        val result = app(Request(Method.GET, "/result/$jobId"))
-        assertEquals(Status.OK, result.status)
-        assertEquals("amazing results", result.bodyString())
-    }
-
-    @Test
-    fun `result endpoint returns 404 for unknown job`() {
-        val response = app(Request(Method.GET, "/result/unknown"))
-        assertEquals(Status.NOT_FOUND, response.status)
-    }
-
-    @Test
-    fun `result endpoint returns 404 for missing jobId`() {
-        val response = app(Request(Method.GET, "/result/"))
-        assertEquals(Status.NOT_FOUND, response.status)
+    fun `vote shows a voting page`() {
+        val response = app(Request(Method.GET, "/vote"))
+        assertEquals(Status.OK, response.status)
+        val title = response.bodyString()
+        assertThat(title, equalTo("Place your vote:"))
     }
 }
