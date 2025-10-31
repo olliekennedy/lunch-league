@@ -9,7 +9,7 @@ import org.http4k.core.Status
 import org.http4k.lens.contentType
 import org.junit.jupiter.api.Test
 
-class LunchLeague {
+class LunchLeagueTest {
 
     @Test
     fun `home shows the leaderboard`() {
