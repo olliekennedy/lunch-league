@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# ship-it.sh (lean deploy + regional cloning)
-# Build/tests expected to run in CI workflow. Locally, will build if no jar exists.
-
 SECONDARY_REGIONS_FILE="secondary-regions.txt"
 
 if command -v fly >/dev/null 2>&1; then FLY=fly
@@ -17,6 +14,12 @@ PRIMARY_REGION=$(awk -F'=' '/^primary_region *=/ {gsub(/"/,"");gsub(/ /,"");prin
 [ -n "${APP_NAME}" ] || { echo "ERROR: app name not found."; exit 1; }
 [ -n "${PRIMARY_REGION}" ] || { echo "ERROR: primary_region not set."; exit 1; }
 
+# Check if app exists, create if not
+if ! ${FLY} apps list | grep -q "^${APP_NAME}\b"; then
+  echo "==> App ${APP_NAME} does not exist. Creating..."
+  ${FLY} apps create "${APP_NAME}"
+fi
+
 # Secondary regions
 if [ -f "${SECONDARY_REGIONS_FILE}" ]; then
   SECONDARY_REGIONS=$(sed 's/#.*//' "${SECONDARY_REGIONS_FILE}" | awk '/^[a-z0-9]{3}$/' | grep -v "^${PRIMARY_REGION}$" || true)
@@ -28,7 +31,6 @@ echo "==> App: ${APP_NAME}"
 echo "==> Primary region: ${PRIMARY_REGION}"
 [ -n "${SECONDARY_REGIONS}" ] && echo "==> Secondary regions: $(echo "${SECONDARY_REGIONS}" | tr '\n' ' ')" || echo "==> No secondary regions configured"
 
-# Build only if no jar (local convenience)
 if ! ls build/libs/*.jar >/dev/null 2>&1; then
   echo "==> No jar found; performing local build (tests run)"
   [ -x ./gradlew ] || { echo "ERROR: gradlew missing."; exit 1; }
