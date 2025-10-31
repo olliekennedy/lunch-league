@@ -18,7 +18,7 @@ import org.http4k.template.HandlebarsTemplates
 import org.http4k.template.ViewModel
 import org.http4k.template.viewModel
 
-object VotePage : ViewModel
+data class VotePage(val errors: List<String> = emptyList()) : ViewModel
 data class HomePage(val leaderboard: String) : ViewModel
 
 val renderer = HandlebarsTemplates().CachingClasspath()
@@ -32,15 +32,25 @@ val app = routes(
     },
 
     "/vote" bind Method.GET to {
-        Response(Status.OK).with(view of VotePage)
+        Response(Status.OK).with(view of VotePage())
     },
 
     "/vote" bind Method.POST to { req ->
-        val restaurant = req.form("restaurant") ?: ""
-        val rating = req.form("rating")?.toIntOrNull() ?: 0
-        val name = req.form("name") ?: ""
-        voteManager.vote(restaurant, name, rating)
-        Response(Status.FOUND).header("Location", "/")
+        val restaurant = req.form("restaurant")?.trim().orEmpty()
+        val rating = req.form("rating")?.toIntOrNull()
+        val name = req.form("name")?.trim().orEmpty()
+
+        val errors = mutableListOf<String>()
+        if (restaurant.isEmpty()) errors += "Restaurant is required."
+        if (name.isEmpty()) errors += "Name is required."
+        if (rating == null || rating !in 1..10) errors += "Rating must be a number between 1 and 10."
+
+        if (errors.isNotEmpty()) {
+            Response(Status.OK).with(view of VotePage(errors))
+        } else {
+            voteManager.vote(restaurant, name, rating!!)
+            Response(Status.FOUND).header("Location", "/")
+        }
     }
 )
 

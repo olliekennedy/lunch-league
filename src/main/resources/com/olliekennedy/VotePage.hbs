@@ -1,6 +1,13 @@
 <h1>Lunch League</h1>
 <h2>Place your vote:</h2>
 <form method="post" action="/vote">
+    {{#if errors}}
+        <ul>
+            {{#each errors}}
+                <li class="error-message">{{this}}</li>
+            {{/each}}
+        </ul>
+    {{/if}}
     <label for="restaurant">Restaurant:</label><br>
     <input type="text" id="restaurant" name="restaurant"><br>
     <label for="rating">Rating:</label><br>

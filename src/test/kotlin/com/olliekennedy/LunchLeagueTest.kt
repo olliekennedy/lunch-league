@@ -74,4 +74,20 @@ class LunchLeagueTest {
         assertThat(home, contains("Sushi Place".toRegex()))
         assertThat(home, contains("5.0".toRegex()))
     }
+
+    @Test
+    fun `submitting a bad vote returns bad request and gives you feedback`() {
+        val response = app(
+            Request(Method.POST, "/vote")
+                .form("restaurant", "")
+                .form("rating", "11")
+                .form("name", "")
+        )
+
+        assertThat(response.status, equalTo(Status.OK))
+
+        assertThat(response.bodyString(), contains("Restaurant is required.".toRegex()))
+        assertThat(response.bodyString(), contains("Name is required.".toRegex()))
+        assertThat(response.bodyString(), contains("Rating must be a number between 1 and 10.".toRegex()))
+    }
 }
