@@ -5,7 +5,6 @@ import com.natpryce.hamkrest.contains
 import com.olliekennedy.app
 import org.http4k.playwright.Http4kBrowser
 import org.http4k.playwright.LaunchPlaywrightBrowser
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
 
@@ -27,6 +26,26 @@ class PlaywrightBrowserTests {
             navigateHome()
             click("text=Place a vote")
             assertThat(content(), contains("Place your vote:".toRegex()))
+        }
+    }
+
+    @Test
+    fun `submitting vote form redirects to homepage and shows leaderboard`(browser: Http4kBrowser) {
+        with(browser.newPage()) {
+            setDefaultTimeout(2000.0)
+
+            navigate("/vote")
+
+            fill("input[id=restaurant]", "Sushi Place")
+            fill("input[id=rating]", "5")
+            fill("input[id=name]", "Ollie")
+
+            click("button[type=submit]")
+
+            assertThat(content(), contains("Lunch League".toRegex()))
+
+            assertThat(content(), contains("Sushi Place".toRegex()))
+            assertThat(content(), contains("5.0".toRegex()))
         }
     }
 }

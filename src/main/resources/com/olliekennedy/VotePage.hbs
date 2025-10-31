@@ -1,11 +1,11 @@
 <h1>Lunch League</h1>
 <h2>Place your vote:</h2>
-<form>
+<form method="post" action="/vote">
     <label for="restaurant">Restaurant:</label><br>
-    <input type="text" id="restaurant"><br>
+    <input type="text" id="restaurant" name="restaurant"><br>
     <label for="rating">Rating:</label><br>
-    <input type="text" id="rating"><br>
+    <input type="text" id="rating" name="rating"><br>
     <label for="name">Your Name:</label><br>
-    <input type="text" id="name"><br>
+    <input type="text" id="name" name="name"><br>
     <button type="submit">Submit</button>
 </form>
