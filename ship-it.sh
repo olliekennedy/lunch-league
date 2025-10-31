@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SECONDARY_REGIONS_FILE="secondary-regions.txt"
-
 if command -v fly >/dev/null 2>&1; then FLY=fly
 elif command -v flyctl >/dev/null 2>&1; then FLY=flyctl
 else echo "ERROR: fly CLI not found." >&2; exit 1; fi
@@ -20,16 +18,8 @@ if ! ${FLY} apps list | grep -q "^${APP_NAME}\b"; then
   ${FLY} apps create "${APP_NAME}"
 fi
 
-# Secondary regions
-if [ -f "${SECONDARY_REGIONS_FILE}" ]; then
-  SECONDARY_REGIONS=$(sed 's/#.*//' "${SECONDARY_REGIONS_FILE}" | awk '/^[a-z0-9]{3}$/' | grep -v "^${PRIMARY_REGION}$" || true)
-else
-  SECONDARY_REGIONS=""
-fi
-
 echo "==> App: ${APP_NAME}"
 echo "==> Primary region: ${PRIMARY_REGION}"
-[ -n "${SECONDARY_REGIONS}" ] && echo "==> Secondary regions: $(echo "${SECONDARY_REGIONS}" | tr '\n' ' ')" || echo "==> No secondary regions configured"
 
 if ! ls build/libs/*.jar >/dev/null 2>&1; then
   echo "==> No jar found; performing local build (tests run)"
@@ -45,32 +35,6 @@ echo "==> Version label: ${VERSION_LABEL}"
 
 echo "==> Deploying"
 ${FLY} deploy --image-label "${VERSION_LABEL}" --wait-timeout 300
-
-echo "==> Fetching machines (JSON)"
-MACHINES_JSON=$(${FLY} machine list --app "${APP_NAME}" --json 2>/dev/null | jq -c '.[]')
-[ -n "${MACHINES_JSON}" ] || { echo "ERROR: No machines returned."; exit 1; }
-
-BASE_ID=$(echo "${MACHINES_JSON}" | jq -r "select(.region==\"${PRIMARY_REGION}\") | .id" | head -1)
-[ -z "${BASE_ID}" ] && BASE_ID=$(echo "${MACHINES_JSON}" | jq -r '.id' | head -1)
-echo "${BASE_ID}" | grep -qE '^[0-9a-f]{12,}$' || { echo "ERROR: Invalid base machine id: ${BASE_ID}"; exit 1; }
-echo "==> Base machine: ${BASE_ID}"
-
-have_region() {
-  echo "${MACHINES_JSON}" | jq -r '.region' | grep -q "^$1$"
-}
-
-if [ -n "${SECONDARY_REGIONS}" ]; then
-  while read -r region; do
-    [ -z "${region}" ] && continue
-    if have_region "${region}"; then
-      echo "==> Region ${region} already present (skip)"
-      continue
-    fi
-    echo "==> Cloning ${BASE_ID} -> ${region}"
-    ${FLY} machine clone "${BASE_ID}" --region "${region}" --app "${APP_NAME}"
-    MACHINES_JSON=$(${FLY} machine list --app "${APP_NAME}" --json 2>/dev/null | jq -c '.[]')
-  done <<<"${SECONDARY_REGIONS}"
-fi
 
 echo "==> Final status"
 ${FLY} status --app "${APP_NAME}" || true
