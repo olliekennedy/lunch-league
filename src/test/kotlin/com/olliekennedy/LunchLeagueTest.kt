@@ -17,8 +17,9 @@ class LunchLeagueTest {
         val response = app(Request(Method.GET, "/"))
         assertThat(Status.OK, equalTo(response.status))
         assertThat(response.contentType(), equalTo(TEXT_HTML))
-        val title = response.bodyString()
-        assertThat(title, contains("<h1>Lunch League</h1>".toRegex()))
+        val body = response.bodyString()
+        assertThat(body, contains("<h1>Lunch League</h1>".toRegex()))
+        assertThat(body, contains("<h2>Leaderboard:</h2>".toRegex()))
     }
 
     @Test
