@@ -6,14 +6,15 @@ import org.http4k.core.Response
 import org.http4k.core.Status
 import org.http4k.core.then
 import org.http4k.filter.DebuggingFilters.PrintRequest
+import org.http4k.lens.html
 import org.http4k.routing.bind
 import org.http4k.routing.routes
 import org.http4k.server.Jetty
 import org.http4k.server.asServer
 
 val app = routes(
-    "/" bind Method.GET to { Response(Status.OK).body("Lunch League") },
-    "/vote" bind Method.GET to { Response(Status.OK).body("Place your vote:") },
+    "/" bind Method.GET to { Response(Status.OK).html("Lunch League") },
+    "/vote" bind Method.GET to { Response(Status.OK).html("Place your vote:") },
 )
 
 fun buildApp(debug: Boolean = false): HttpHandler {
