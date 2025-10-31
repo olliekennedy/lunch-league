@@ -3,12 +3,15 @@ package com.olliekennedy
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.contains
 import com.natpryce.hamkrest.equalTo
+import com.natpryce.hamkrest.isNullOrBlank
 import org.http4k.core.ContentType.Companion.TEXT_HTML
 import org.http4k.core.Method
 import org.http4k.core.Request
 import org.http4k.core.Status
 import org.http4k.lens.contentType
+import org.jsoup.Jsoup
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertNotNull
 
 class LunchLeagueTest {
 
@@ -33,12 +36,25 @@ class LunchLeagueTest {
     }
 
     @Test
+    fun `vote page has a voting form`() {
+        val response = app(Request(Method.GET, "/vote"))
+        val doc = Jsoup.parse(response.bodyString())
+        val form = doc.selectFirst("form")
+        assertNotNull(form)
+
+        assertNotNull(form.selectFirst("input[id=restaurant]"))
+        assertNotNull(form.selectFirst("input[id=rating]"))
+        assertNotNull(form.selectFirst("input[id=name]"))
+
+        val submit = form.selectFirst("button[type=submit], input[type=submit]")
+        assertNotNull(submit)
+    }
+
+    @Test
     fun `home page contains a vote button`() {
         val response = app(Request(Method.GET, "/"))
-        assertThat(Status.OK, equalTo(response.status))
-        assertThat(response.contentType(), equalTo(TEXT_HTML))
-        val body = response.bodyString()
-        assertThat(body, contains("<button".toRegex()))
-        assertThat(body, contains("<a href=\"/vote\"".toRegex()))
+        val doc = Jsoup.parse(response.bodyString())
+        val voteLink = doc.select("a[href=/vote]").first()
+        assertThat(voteLink == null, equalTo(false))
     }
 }

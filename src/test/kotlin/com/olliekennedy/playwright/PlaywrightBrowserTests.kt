@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
 
-@Disabled("leaving here as a template")
 class PlaywrightBrowserTests {
 
     @RegisterExtension
@@ -18,7 +17,16 @@ class PlaywrightBrowserTests {
     @Test
     fun `can browse app`(browser: Http4kBrowser) {
         with(browser.newPage()) {
-            assertThat(navigateHome().text(), contains("Hello, my name is Ollie and this is my website. Enjoy.".toRegex()))
+            assertThat(navigateHome().text(), contains("Lunch League".toRegex()))
+        }
+    }
+
+    @Test
+    fun `can navigate from home to vote page`(browser: Http4kBrowser) {
+        with(browser.newPage()) {
+            navigateHome()
+            click("text=Place a vote")
+            assertThat(content(), contains("Place your vote:".toRegex()))
         }
     }
 }
