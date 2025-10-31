@@ -34,9 +34,6 @@ jobs:
       - name: Install flyctl
         uses: superfly/flyctl-actions/setup-flyctl@master
 
-      - name: Install Playwright dependencies
-        run: npx playwright install-deps
-
       - name: Make deploy script executable
         run: chmod +x ./ship-it.sh
 

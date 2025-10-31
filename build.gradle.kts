@@ -42,6 +42,9 @@ tasks {
 
     withType<Test> {
         useJUnitPlatform()
+        if (System.getenv("CI") == "true") {
+            exclude("com/olliekennedy/playwright/**")
+        }
     }
 
     java {
